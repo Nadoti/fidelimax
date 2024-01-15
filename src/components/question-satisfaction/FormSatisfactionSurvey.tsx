@@ -8,6 +8,7 @@ import { useDataFormContext } from "@/context/formContext"
 import { TypeOfQuestions } from "./TypeOfQuestions"
 import { ActionTypesError } from "@/reducer/form-reducer-error"
 import { Button } from "../Button"
+import { notification } from "@/utils/notification"
 
 export function FormSatisfactionSurvey({ dataQuestions }: { dataQuestions: QuestionsProps }) {
   const { state, dispatchError } = useDataFormContext()
@@ -15,22 +16,14 @@ export function FormSatisfactionSurvey({ dataQuestions }: { dataQuestions: Quest
   async function sendFake() {
     const { multipleChoiceOptions, store, multipleChoiceOptionsThree} = state
     
-    if(!multipleChoiceOptions.length) {
-      dispatchError({ type: ActionTypesError.MULTIPLE_CHOICE_OPTIONS_ERROR})
+    if(multipleChoiceOptions.length || store || multipleChoiceOptionsThree.length) {
+      await sendFakePostApi(FormSatisfactionSurvey)
       return
     }
-
-    if(!store) {
-      dispatchError({ type: ActionTypesError.STORE_ERROR})
-      return
-    }
-    
-    if(!multipleChoiceOptionsThree.length) {
-      dispatchError({ type: ActionTypesError.MULTIPLE_CHOICE_OPTIONS_THREE_ERROR})
-      return
-    }
-
-    await sendFakePostApi(FormSatisfactionSurvey)
+    dispatchError({ type: ActionTypesError.MULTIPLE_CHOICE_OPTIONS_ERROR})
+    dispatchError({ type: ActionTypesError.MULTIPLE_CHOICE_OPTIONS_THREE_ERROR})
+    dispatchError({ type: ActionTypesError.STORE_ERROR})
+    notification({message: 'Os Campos em vermelhos são obrigatórios', title: 'Preencha os Campos', type: 'error'})
   }
   
   async function sendError() {
